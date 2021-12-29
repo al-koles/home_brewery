@@ -3,7 +3,8 @@ import 'package:home_brewery/api/rest_api.dart';
 import 'package:home_brewery/components/recipes_table.dart';
 import 'package:home_brewery/model/recipe.dart';
 
-import '../custom_icons.dart';
+import '../components/custom_icons.dart';
+import '../constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -20,6 +21,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<List<Recipe>> _recipes = ApiManager.getRecipes();
 
   MenuItems _menuItem = MenuItems.all;
+  Recipe? selectedRecipe;
+
+  @override
+  void initState() {
+    _recipes.then((value) {
+      setState(() {
+        selectedRecipe = value[0];
+      });
+    });
+    super.initState();
+  }
 
   void menuItemChanged(MenuItems? value) {
     setState(() {
@@ -46,12 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
       constraints: const BoxConstraints(
         maxHeight: 500,
       ),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(
-          Radius.circular(20),
-        ),
-        color: Color(0xFFFFFACE),
-      ),
+      decoration: Constants.boxDecoration,
       width: 200,
       child: Column(
         children: [
@@ -144,32 +151,44 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   alignment: Alignment.topLeft,
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       menuBar(),
                       Expanded(
-                        child: Wrap(
-                          spacing: 30,
-                          runSpacing: 30,
-                          children: [
-                            FutureBuilder<List<Recipe>>(
-                              future: _recipes,
-                              builder: (context, snapshot){
-                                if(snapshot.hasData){
-                                  final recipes = snapshot.data as List<Recipe>;
-                                  print(recipes.toString());
-                                  return RecipesTable(recipes: recipes);
-                                }
-                                else{
-                                  return const CircularProgressIndicator();
-                                }
-                              },
-                            ),
-                            Container(
-                              color: Colors.white,
-                              width: 400,
-                              height: 150,
-                            ),
-                          ],
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Container(
+                                decoration: Constants.boxDecoration,
+                                margin: const EdgeInsets.all(30),
+                                padding: const EdgeInsets.all(30),
+                                height: 250,
+                                alignment: Alignment.topLeft,
+                                child: selectedRecipe == null
+                                    ? const CircularProgressIndicator()
+                                    : Text(selectedRecipe!.name),
+                              ),
+                              FutureBuilder<List<Recipe>>(
+                                future: _recipes,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    final recipes =
+                                        snapshot.data as List<Recipe>;
+                                    return RecipesTable(
+                                      recipes: recipes,
+                                      rowSelected: (Recipe recipe) {
+                                        setState(() {
+                                          selectedRecipe = recipe;
+                                        });
+                                      },
+                                    );
+                                  } else {
+                                    return const CircularProgressIndicator();
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
