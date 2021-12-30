@@ -33,7 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     _recipes.then((value) {
       setState(() {
-        selectedRecipe = value[0];
+        if (value.isEmpty) {
+          selectedRecipe = null;
+        } else {
+          selectedRecipe = value[0];
+        }
       });
     });
     super.initState();
@@ -103,8 +107,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   await AuthService().signInWithEmail(
                       emailController.text.trim(), passController.text.trim());
                 } else {
-                  await AuthService().createUserWithEmail(
+                  final User? user = await AuthService().createUserWithEmail(
                       emailController.text.trim(), passController.text.trim());
+                  final response = await ApiManager.postUser(
+                      {'clientId': user!.uid, 'email': user.email});
+                  print('response: $response');
                 }
                 await toast(message: "It's ok", color: Colors.green);
                 Navigator.pop(context);
@@ -144,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             if (value.isEmpty) {
               selectedRecipe = null;
-            }else{
+            } else {
               selectedRecipe = value[0];
             }
           });
@@ -167,22 +174,28 @@ class _HomeScreenState extends State<HomeScreen> {
       width: 200,
       height: 545,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          RadioListTile(
-            title: const Text(
-              'All recipes',
-            ),
-            value: MenuItems.all,
-            groupValue: _menuItem,
-            onChanged: menuItemChanged,
-          ),
-          RadioListTile(
-              title: const Text(
-                'My recipes',
+          Column(
+            children: [
+              RadioListTile(
+                title: const Text(
+                  'All recipes',
+                ),
+                value: MenuItems.all,
+                groupValue: _menuItem,
+                onChanged: menuItemChanged,
               ),
-              value: MenuItems.my,
-              groupValue: _menuItem,
-              onChanged: menuItemChanged),
+              RadioListTile(
+                  title: const Text(
+                    'My recipes',
+                  ),
+                  value: MenuItems.my,
+                  groupValue: _menuItem,
+                  onChanged: menuItemChanged),
+            ],
+          ),
+          buildSaveButton(),
         ],
       ),
     );
@@ -355,6 +368,39 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       );
+
+  Widget buildSaveButton() {
+    bool enable = true;
+    if (selectedRecipe == null || _menuItem != MenuItems.all) {
+      enable = false;
+    }
+    return FutureBuilder(
+        future: _recipes,
+        builder: (context, snapshot) {
+          print('enable: $enable');
+          return ElevatedButton(
+            onPressed: () async {
+              if (enable) {
+                if (widget.isLogged) {
+                  if (selectedRecipe!.price == 0) {
+                    final response = await ApiManager.postClientRecipe({
+                      'clientId': AuthService().currentUser!.uid,
+                      'recipeId': selectedRecipe!.recipeId
+                    });
+                    print('respnse: ${response.statusCode}');
+                  } else {
+                    //TODO: add payments
+                  }
+                } else {
+                  buildLoginAlert(context);
+                }
+              }
+            },
+            child: Text(selectedRecipe != null && selectedRecipe!.price == 0 ? 'Save' : 'Buy'),
+          );
+        }
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

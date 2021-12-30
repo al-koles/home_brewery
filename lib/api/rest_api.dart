@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 class ApiManager {
   static Future<List<Recipe>> getRecipes() async {
     List<Recipe> recipes = [];
-    var uri = Uri.parse('${Constants.baseUrl}/GetRecipes');
+    var uri = Uri.parse('${Constants.baseUrl}/Recipes/GetRecipes');
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       var jsonData = jsonDecode(response.body.toString());
@@ -26,7 +26,7 @@ class ApiManager {
 
   static Future<List<Recipe>> getRecipesOfClientId(String clientId) async {
     List<Recipe> recipes = [];
-    var uri = Uri.parse('${Constants.baseUrl}/GetRecipesOfClientId/$clientId');
+    var uri = Uri.parse('${Constants.baseUrl}/ClientRecipes/GetRecipesOfClientId?clientId=$clientId');
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       var jsonData = jsonDecode(response.body.toString());
@@ -35,7 +35,7 @@ class ApiManager {
         recipes.add(modelType);
       }
     } else {
-      print('failed to load data');
+      print('failed to load data of client');
       //throw Exception('Failed to load recipes');
     }
     return recipes;
@@ -62,7 +62,12 @@ class ApiManager {
   };
 
   static Future<http.Response> postUser(Map<String, dynamic> client) async{
-    var uri = Uri.parse('${Constants.baseUrl}/PostModelType');
+    var uri = Uri.parse('${Constants.baseUrl}/Clients/PostClient');
     return http.post(uri, body: jsonEncode(client), headers: headers);
+  }
+
+  static Future<http.Response> postClientRecipe(Map<String, dynamic> clientRecipe) async{
+    var uri = Uri.parse('${Constants.baseUrl}/ClientRecipes/PostClientRecipe');
+    return http.post(uri, body: jsonEncode(clientRecipe), headers: headers);
   }
 }
