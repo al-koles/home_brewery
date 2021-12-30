@@ -24,16 +24,19 @@ class _RecipesTableState extends State<RecipesTable> {
   Widget buildDataTable(List<Recipe> recipes) {
     final columns = ['name', 'abv', 'ibu', 'og', 'fg', 'ba', 'price'];
 
-    return Container(
-      height: 265,
-      margin: const EdgeInsets.symmetric(horizontal: 30),
-      decoration: Constants.boxDecoration,
-      child: SingleChildScrollView(
-        child: DataTable(
-          sortAscending: isAsc,
-          sortColumnIndex: sortColumnIndex,
-          columns: getColumns(columns),
-          rows: getRows(recipes),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Container(
+        height: 265,
+        //margin: const EdgeInsets.symmetric(horizontal: 30),
+        decoration: Constants.boxDecoration,
+        child: SingleChildScrollView(
+          child: DataTable(
+            sortAscending: isAsc,
+            sortColumnIndex: sortColumnIndex,
+            columns: getColumns(columns),
+            rows: getRows(recipes),
+          ),
         ),
       ),
     );

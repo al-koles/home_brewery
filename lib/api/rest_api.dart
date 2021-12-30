@@ -24,6 +24,23 @@ class ApiManager {
     return recipes;
   }
 
+  static Future<List<Recipe>> getRecipesOfClientId(String clientId) async {
+    List<Recipe> recipes = [];
+    var uri = Uri.parse('${Constants.baseUrl}/GetRecipesOfClientId/$clientId');
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      var jsonData = jsonDecode(response.body.toString());
+      for (var u in jsonData) {
+        final modelType = Recipe.fromJson(u);
+        recipes.add(modelType);
+      }
+    } else {
+      print('failed to load data');
+      //throw Exception('Failed to load recipes');
+    }
+    return recipes;
+  }
+
   static Future<List<RecipeConfigParagraph>> getRecipeConfig(int id, BuildContext context) async {
     String xmlStr = await DefaultAssetBundle.of(context).loadString('assets/recipes/$id.xml');
     final document = XmlDocument.parse(xmlStr);
@@ -37,5 +54,15 @@ class ApiManager {
           ),
         )
         .toList();
+  }
+
+  static Map<String, String> headers = {
+    "Content-type": "application/json",
+    "Accept": "application/json"
+  };
+
+  static Future<http.Response> postUser(Map<String, dynamic> client) async{
+    var uri = Uri.parse('${Constants.baseUrl}/PostModelType');
+    return http.post(uri, body: jsonEncode(client), headers: headers);
   }
 }

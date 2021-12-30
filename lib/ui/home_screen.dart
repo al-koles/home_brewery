@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final emailController = TextEditingController();
   final passController = TextEditingController();
 
-  _openPopup(context) {
+  buildLoginAlert(context) {
     Alert(
         closeIcon: const Icon(FontAwesomeIcons.windowClose),
         context: context,
@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   login = !login;
                   Navigator.pop(context);
-                  _openPopup(context);
+                  buildLoginAlert(context);
                 },
                 child: Text(
                   login
@@ -125,18 +125,30 @@ class _HomeScreenState extends State<HomeScreen> {
   void menuItemChanged(MenuItems? value) {
     setState(() {
       if (value != null) {
-        _menuItem = value;
         switch (value) {
           case MenuItems.all:
             _recipes = ApiManager.getRecipes();
+            _menuItem = value;
             break;
           case MenuItems.my:
             if (widget.isLogged) {
+              _recipes = ApiManager.getRecipesOfClientId(
+                  AuthService().currentUser!.uid);
+              _menuItem = value;
             } else {
-              _openPopup(context);
+              buildLoginAlert(context);
             }
             break;
         }
+        _recipes.then((value) {
+          setState(() {
+            if (value.isEmpty) {
+              selectedRecipe = null;
+            }else{
+              selectedRecipe = value[0];
+            }
+          });
+        });
       }
     });
   }
@@ -183,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
         height: 250,
         alignment: Alignment.topLeft,
         child: selectedRecipe == null
-            ? const CircularProgressIndicator()
+            ? const SizedBox()
             : ListView(
                 children: [
                   Container(
@@ -270,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 if (widget.isLogged) {
                 } else {
-                  _openPopup(context);
+                  buildLoginAlert(context);
                 }
               },
               child: Row(
@@ -287,11 +299,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               await toast(message: 'Error', color: Colors.red);
                             }
                           },
-
                           child: const Text('Log out'),
                         )
                       : const SizedBox(),
-                  const SizedBox(width: 10,),
+                  const SizedBox(
+                    width: 10,
+                  ),
                   const Icon(
                     Icons.account_circle,
                     color: Colors.white,
