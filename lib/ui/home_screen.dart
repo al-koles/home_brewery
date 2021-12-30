@@ -374,24 +374,31 @@ class _HomeScreenState extends State<HomeScreen> {
     if (selectedRecipe == null || _menuItem != MenuItems.all) {
       enable = false;
     }
-    return ElevatedButton(
-      onPressed: () async {
-        if (enable) {
-          if (widget.isLogged) {
-            if (selectedRecipe!.price == 0) {
-              await ApiManager.postClientRecipe({
-                'clientId': AuthService().currentUser!.uid,
-                'recipeId': selectedRecipe!.recipeId
-              });
-            } else {
-              //TODO: add payments
-            }
-          } else {
-            buildLoginAlert(context);
-          }
+    return FutureBuilder(
+        future: _recipes,
+        builder: (context, snapshot) {
+          print('enable: $enable');
+          return ElevatedButton(
+            onPressed: () async {
+              if (enable) {
+                if (widget.isLogged) {
+                  if (selectedRecipe!.price == 0) {
+                    final response = await ApiManager.postClientRecipe({
+                      'clientId': AuthService().currentUser!.uid,
+                      'recipeId': selectedRecipe!.recipeId
+                    });
+                    print('respnse: ${response.statusCode}');
+                  } else {
+                    //TODO: add payments
+                  }
+                } else {
+                  buildLoginAlert(context);
+                }
+              }
+            },
+            child: Text(selectedRecipe != null && selectedRecipe!.price == 0 ? 'Save' : 'Buy'),
+          );
         }
-      },
-      child: Text(selectedRecipe!.price == 0 ? 'Save' : 'Buy'),
     );
   }
 

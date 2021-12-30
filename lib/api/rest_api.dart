@@ -26,7 +26,7 @@ class ApiManager {
 
   static Future<List<Recipe>> getRecipesOfClientId(String clientId) async {
     List<Recipe> recipes = [];
-    var uri = Uri.parse('${Constants.baseUrl}/Recipes/GetRecipesOfClientId/$clientId');
+    var uri = Uri.parse('${Constants.baseUrl}/ClientRecipes/GetRecipesOfClientId?clientId=$clientId');
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       var jsonData = jsonDecode(response.body.toString());
@@ -35,7 +35,7 @@ class ApiManager {
         recipes.add(modelType);
       }
     } else {
-      print('failed to load data');
+      print('failed to load data of client');
       //throw Exception('Failed to load recipes');
     }
     return recipes;
