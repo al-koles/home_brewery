@@ -25,7 +25,8 @@ class _RecipesTableState extends State<RecipesTable> {
     final columns = ['name', 'abv', 'ibu', 'og', 'fg', 'ba', 'price'];
 
     return Container(
-      height: 270,
+      height: 265,
+      margin: const EdgeInsets.symmetric(horizontal: 30),
       decoration: Constants.boxDecoration,
       child: SingleChildScrollView(
         child: DataTable(

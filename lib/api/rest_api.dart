@@ -1,12 +1,13 @@
-
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:home_brewery/model/recipe_config_paragraph.dart';
+import 'package:xml/xml.dart';
 import 'package:home_brewery/constants.dart';
 import 'package:home_brewery/model/recipe.dart';
 import 'package:http/http.dart' as http;
 
-class ApiManager{
-
+class ApiManager {
   static Future<List<Recipe>> getRecipes() async {
     List<Recipe> recipes = [];
     var uri = Uri.parse('${Constants.baseUrl}/GetRecipes');
@@ -17,10 +18,25 @@ class ApiManager{
         final modelType = Recipe.fromJson(u);
         recipes.add(modelType);
       }
-    } else{
+    } else {
       print('failed to load data');
       //throw Exception('Failed to load recipes');
     }
     return recipes;
+  }
+
+  static Future<List<RecipeConfigParagraph>> getRecipeConfig(int id, BuildContext context) async {
+    String xmlStr = await DefaultAssetBundle.of(context).loadString('assets/recipes/$id.xml');
+    final document = XmlDocument.parse(xmlStr);
+
+    final paragraphs = document.findAllElements('p');
+    return paragraphs
+        .map(
+          (p) => RecipeConfigParagraph(
+            text: p.findElements('text').first.text,
+            time: int.parse(p.findElements('time').first.text),
+          ),
+        )
+        .toList();
   }
 }

@@ -2,7 +2,7 @@ class Recipe {
   final int recipeId;
   final String name;
   final String description;
-  final String configLink;
+  final String? configLink;
   final int abv;
   final int ibu;
   final int og;
@@ -28,7 +28,7 @@ class Recipe {
       recipeId: json['recipeId'] ?? -1,
       name: json['name'] as String,
       description: json['description'] as String,
-      configLink: json['configLink'] as String,
+      configLink: json['configLink'] == null ? null : json['configLink'] as String,
       abv: json['abv'] ?? -1,
       ibu: json['ibu'] ?? -1,
       og: json['og'] ?? -1,
