@@ -8,7 +8,7 @@ import 'package:home_brewery/components/recipes_table.dart';
 import 'package:home_brewery/model/recipe.dart';
 import 'package:home_brewery/model/recipe_config_paragraph.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-
+//import 'package:pay/pay.dart';
 import '../components/custom_icons.dart';
 import '../constants.dart';
 
@@ -196,9 +196,33 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           buildSaveButton(),
+          // GooglePayButton(
+          //   paymentConfigurationAsset: 'gpay.json',
+          //   paymentItems: _paymentItems,
+          //   style: GooglePayButtonStyle.black,
+          //   type: GooglePayButtonType.pay,
+          //   // width: 100,
+          //   // height: 70,
+          //   margin: const EdgeInsets.only(top: 15.0),
+          //   onPaymentResult: onGooglePayResult,
+          //   loadingIndicator: const Center(
+          //     child: CircularProgressIndicator(),
+          //   ),
+          // ),
         ],
       ),
     );
+  }
+  // final _paymentItems = [
+  //   const PaymentItem(
+  //     label: 'Total',
+  //     amount: '99.99',
+  //     status: PaymentItemStatus.final_price,
+  //   )
+  // ];
+
+  void onGooglePayResult(paymentResult) {
+    debugPrint(paymentResult.toString());
   }
 
   Widget buildRecipeInfo() => Container(
