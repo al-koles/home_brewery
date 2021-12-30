@@ -1,6 +1,8 @@
+import 'package:easy_localization/src/public_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:home_brewery/constants.dart';
 import 'package:home_brewery/model/recipe.dart';
+import 'package:home_brewery/translations/locale_keys.g.dart';
 
 class RecipesTable extends StatefulWidget {
   const RecipesTable({
@@ -22,7 +24,7 @@ class _RecipesTableState extends State<RecipesTable> {
   int selectedIndex = 0;
 
   Widget buildDataTable(List<Recipe> recipes) {
-    final columns = ['name', 'abv', 'ibu', 'og', 'fg', 'ba', 'price'];
+    final columns = [LocaleKeys.recipe_name.tr(), 'abv', 'ibu', 'og', 'fg', 'ba', LocaleKeys.price.tr()];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/src/public_ext.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -7,7 +8,9 @@ import 'package:home_brewery/api/rest_api.dart';
 import 'package:home_brewery/components/recipes_table.dart';
 import 'package:home_brewery/model/recipe.dart';
 import 'package:home_brewery/model/recipe_config_paragraph.dart';
+import 'package:home_brewery/translations/locale_keys.g.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+
 //import 'package:pay/pay.dart';
 import '../components/custom_icons.dart';
 import '../constants.dart';
@@ -179,23 +182,20 @@ class _HomeScreenState extends State<HomeScreen> {
           Column(
             children: [
               RadioListTile(
-                title: const Text(
-                  'All recipes',
-                ),
+                title: const Text(LocaleKeys.all_recipes).tr(),
                 value: MenuItems.all,
                 groupValue: _menuItem,
                 onChanged: menuItemChanged,
               ),
               RadioListTile(
-                  title: const Text(
-                    'My recipes',
-                  ),
+                  title: Text(LocaleKeys.my_recipes.tr()),
                   value: MenuItems.my,
                   groupValue: _menuItem,
                   onChanged: menuItemChanged),
             ],
           ),
           buildSaveButton(),
+
           // GooglePayButton(
           //   paymentConfigurationAsset: 'gpay.json',
           //   paymentItems: _paymentItems,
@@ -213,6 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   // final _paymentItems = [
   //   const PaymentItem(
   //     label: 'Total',
@@ -314,6 +315,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
+            ),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () {
+                    context.setLocale(Locale('en'));
+                  },
+                  child: Text('EN'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    context.setLocale(Locale('uk'));
+                  },
+                  child: Text('UK'),
+                ),
+              ],
             ),
             GestureDetector(
               onTap: () {
@@ -420,10 +437,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               }
             },
-            child: Text(selectedRecipe != null && selectedRecipe!.price == 0 ? 'Save' : 'Buy'),
+            child: Text(selectedRecipe != null && selectedRecipe!.price == 0
+                ? LocaleKeys.save_button.tr()
+                : LocaleKeys.buy_button.tr()),
           );
-        }
-    );
+        });
   }
 
   @override
