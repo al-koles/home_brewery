@@ -1,16 +1,21 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:home_brewery/api/auth.dart';
 import 'package:home_brewery/api/rest_api.dart';
 import 'package:home_brewery/components/recipes_table.dart';
 import 'package:home_brewery/model/recipe.dart';
 import 'package:home_brewery/model/recipe_config_paragraph.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 import '../components/custom_icons.dart';
 import '../constants.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({required this.isLogged, Key? key}) : super(key: key);
 
-  final bool isLogged = false;
+  final bool isLogged;
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -34,6 +39,89 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
   }
 
+  Future<void> toast({required String message, required Color color}) async {
+    await Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER,
+      timeInSecForIosWeb: 1,
+      backgroundColor: color,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
+
+  bool login = true;
+  final emailController = TextEditingController();
+  final passController = TextEditingController();
+
+  _openPopup(context) {
+    Alert(
+        closeIcon: const Icon(FontAwesomeIcons.windowClose),
+        context: context,
+        title: login ? "LOGIN" : "REGISTER",
+        content: Column(
+          children: [
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                icon: Icon(Icons.account_circle),
+                labelText: 'Email',
+              ),
+            ),
+            TextField(
+              controller: passController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                icon: Icon(Icons.lock),
+                labelText: 'Password',
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(top: 10),
+              child: GestureDetector(
+                onTap: () {
+                  login = !login;
+                  Navigator.pop(context);
+                  _openPopup(context);
+                },
+                child: Text(
+                  login
+                      ? 'Not registered yet? Register?'
+                      : 'Already registered? Log in?',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            onPressed: () async {
+              try {
+                if (login) {
+                  await AuthService().signInWithEmail(
+                      emailController.text.trim(), passController.text.trim());
+                } else {
+                  await AuthService().createUserWithEmail(
+                      emailController.text.trim(), passController.text.trim());
+                }
+                await toast(message: "It's ok", color: Colors.green);
+                Navigator.pop(context);
+              } on FirebaseAuthException catch (e) {
+                await toast(message: e.message.toString(), color: Colors.red);
+              } catch (e) {
+                await toast(message: 'somethins went wrong', color: Colors.red);
+              }
+            },
+            child: Text(
+              login ? "LOGIN" : "REGISTER",
+              style: const TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          )
+        ]).show();
+  }
+
   void menuItemChanged(MenuItems? value) {
     setState(() {
       if (value != null) {
@@ -43,7 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
             _recipes = ApiManager.getRecipes();
             break;
           case MenuItems.my:
-            print('fill with my recipes');
+            if (widget.isLogged) {
+            } else {
+              _openPopup(context);
+            }
             break;
         }
       }
@@ -55,7 +146,6 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.only(
         top: 30,
         left: 30,
-        bottom: 30,
       ),
       padding: const EdgeInsets.symmetric(
         vertical: 30,
@@ -63,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       decoration: Constants.boxDecoration,
       width: 200,
+      height: 545,
       child: Column(
         children: [
           RadioListTile(
@@ -112,17 +203,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   FutureBuilder<List<RecipeConfigParagraph>>(
-                    future:
-                        ApiManager.getRecipeConfig(selectedRecipe!.recipeId, context),
+                    future: ApiManager.getRecipeConfig(
+                        selectedRecipe!.recipeId, context),
                     builder: (context, snapshot) {
-                      if(snapshot.hasError){
+                      if (snapshot.hasError) {
                         return const SizedBox();
                       }
                       if (snapshot.hasData) {
-                        return Text(snapshot.data!.map((p) =>
-                          '\nTime: ${p.time} minutes.\n${p.text}'
-                        ).join("\n\n"));
-                      }else{
+                        return Text(snapshot.data!
+                            .map((p) => '\nTime: ${p.time} minutes.\n${p.text}')
+                            .join("\n\n"));
+                      } else {
                         return const Center(child: CircularProgressIndicator());
                       }
                     },
@@ -176,19 +267,47 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             GestureDetector(
+              onTap: () {
+                if (widget.isLogged) {
+                } else {
+                  _openPopup(context);
+                }
+              },
               child: Row(
                 children: [
+                  widget.isLogged
+                      ? TextButton(
+                          onPressed: () async {
+                            try {
+                              await AuthService().signOut();
+                              await toast(
+                                  message: 'You logged out',
+                                  color: Colors.green);
+                            } catch (e) {
+                              await toast(message: 'Error', color: Colors.red);
+                            }
+                          },
+
+                          child: const Text('Log out'),
+                        )
+                      : const SizedBox(),
+                  const SizedBox(width: 10,),
                   const Icon(
                     Icons.account_circle,
                     color: Colors.white,
                   ),
+                  const SizedBox(
+                    width: 5,
+                  ),
                   widget.isLogged
-                      ? Container(
-                          color: Colors.blueAccent,
-                          width: 100,
-                          height: 30,
+                      ? Text(
+                          AuthService().currentUser!.email!,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
                         )
-                      : Container(),
+                      : const SizedBox(),
                 ],
               ),
             )
