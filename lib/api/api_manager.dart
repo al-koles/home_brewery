@@ -7,9 +7,10 @@ import 'package:home_brewery/model/recipe.dart';
 import 'package:http/http.dart' as http;
 
 class ApiManager {
-  static Future<List<Recipe>> getRecipes() async {
+  static Future<List<Recipe>> getRecipes({String? clientId}) async {
     List<Recipe> recipes = [];
-    var uri = Uri.parse('${Constants.baseUrl}/Recipes/GetRecipes');
+    var uri = Uri.parse(
+        '${Constants.baseUrl}/${clientId == null ? 'Recipes/GetRecipes' : ('ClientRecipes/GetAvailableRecipesForClientId/' + clientId)}');
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       var jsonData = jsonDecode(response.body.toString());
@@ -26,7 +27,8 @@ class ApiManager {
 
   static Future<List<Recipe>> getRecipesOfClientId(String clientId) async {
     List<Recipe> recipes = [];
-    var uri = Uri.parse('${Constants.baseUrl}/ClientRecipes/GetRecipesOfClientId?clientId=$clientId');
+    var uri = Uri.parse(
+        '${Constants.baseUrl}/ClientRecipes/GetRecipesOfClientId/$clientId');
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       var jsonData = jsonDecode(response.body.toString());
@@ -41,8 +43,10 @@ class ApiManager {
     return recipes;
   }
 
-  static Future<List<RecipeConfigParagraph>> getRecipeConfig(int id, BuildContext context) async {
-    String xmlStr = await DefaultAssetBundle.of(context).loadString('assets/recipes/$id.xml');
+  static Future<List<RecipeConfigParagraph>> getRecipeConfig(
+      int id, BuildContext context) async {
+    String xmlStr = await DefaultAssetBundle.of(context)
+        .loadString('assets/recipes/$id.xml');
     final document = XmlDocument.parse(xmlStr);
 
     final paragraphs = document.findAllElements('p');
@@ -61,13 +65,24 @@ class ApiManager {
     "Accept": "application/json"
   };
 
-  static Future<http.Response> postUser(Map<String, dynamic> client) async{
+  static Future<http.Response> postUser(Map<String, dynamic> client) async {
     var uri = Uri.parse('${Constants.baseUrl}/Clients/PostClient');
     return http.post(uri, body: jsonEncode(client), headers: headers);
   }
 
-  static Future<http.Response> postClientRecipe(Map<String, dynamic> clientRecipe) async{
+  static Future<http.Response> postClientRecipe(
+      Map<String, dynamic> clientRecipe) async {
     var uri = Uri.parse('${Constants.baseUrl}/ClientRecipes/PostClientRecipe');
     return http.post(uri, body: jsonEncode(clientRecipe), headers: headers);
+  }
+
+  static Future<http.Response> deleteClientRecipe(
+      String clientId, int recipeId) {
+    var uri = Uri.parse(
+        '${Constants.baseUrl}/ClientRecipes/DeleteClientRecipe/$clientId, ${recipeId.toString()}');
+    return http.delete(uri,
+        body:
+            jsonEncode({"clientId": clientId, "recipeId": recipeId.toString()}),
+        headers: headers);
   }
 }

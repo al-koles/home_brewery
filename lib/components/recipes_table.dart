@@ -1,16 +1,20 @@
+import 'package:easy_localization/src/public_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:home_brewery/constants.dart';
 import 'package:home_brewery/model/recipe.dart';
+import 'package:home_brewery/translations/locale_keys.g.dart';
 
 class RecipesTable extends StatefulWidget {
-  const RecipesTable({
+  RecipesTable({
     required this.recipes,
     required this.rowSelected,
+    required this.selectedIndex,
     Key? key,
   }) : super(key: key);
 
   final List<Recipe> recipes;
   final Function rowSelected;
+  int selectedIndex = 0;
 
   @override
   _RecipesTableState createState() => _RecipesTableState();
@@ -19,10 +23,9 @@ class RecipesTable extends StatefulWidget {
 class _RecipesTableState extends State<RecipesTable> {
   int? sortColumnIndex;
   bool isAsc = false;
-  int selectedIndex = 0;
 
   Widget buildDataTable(List<Recipe> recipes) {
-    final columns = ['name', 'abv', 'ibu', 'og', 'fg', 'ba', 'price'];
+    final columns = [LocaleKeys.recipe_name.tr(), 'abv', 'ibu', 'og', 'fg', 'ba', LocaleKeys.price.tr()];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -100,11 +103,11 @@ class _RecipesTableState extends State<RecipesTable> {
       ];
       rows.add(DataRow(
         cells: getCells(cells),
-        selected: selectedIndex == i,
+        selected: widget.selectedIndex == i,
         onSelectChanged: (_) {
-          widget.rowSelected(recipes[i]);
+          widget.rowSelected(recipes[i], i);
           setState(() {
-            selectedIndex = i;
+            widget.selectedIndex = i;
           });
         },
       ));

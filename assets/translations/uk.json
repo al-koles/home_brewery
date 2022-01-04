@@ -1,0 +1,16 @@
+{
+  "all_recipes": "Усі рецепти",
+  "my_recipes": "Мої рецепти",
+  "save_button": "Зберегти",
+  "buy_button": "Купити",
+  "recipe_name": "назва",
+  "price": "ціна",
+  "login": "УВІЙТИ",
+  "email": "Електронна адреса",
+  "password": "Пароль",
+  "register": "ЗАРЕЄСТРУВАТИСЯ",
+  "not_registered": "Ще не зареєстровані? Зареєструватися?",
+  "already_registered": "Вже зареєстровані? Увійти?",
+  "remove": "Видалити",
+  "log_out": "Вийти"
+}
