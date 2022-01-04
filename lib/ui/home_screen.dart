@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:home_brewery/api/auth.dart';
-import 'package:home_brewery/api/rest_api.dart';
+import 'package:home_brewery/api/api_manager.dart';
 import 'package:home_brewery/components/recipes_table.dart';
 import 'package:home_brewery/model/recipe.dart';
 import 'package:home_brewery/model/recipe_config_paragraph.dart';
@@ -16,9 +16,11 @@ import '../components/custom_icons.dart';
 import '../constants.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({required this.isLogged, Key? key}) : super(key: key);
+  HomeScreen({required this.user, required this.theRecipes, Key? key})
+      : super(key: key);
 
-  final bool isLogged;
+  final User? user;
+  Future<List<Recipe>>? theRecipes;
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -27,15 +29,18 @@ class HomeScreen extends StatefulWidget {
 enum MenuItems { all, my }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Future<List<Recipe>> _recipes = ApiManager.getRecipes();
-
   MenuItems _menuItem = MenuItems.all;
   Recipe? selectedRecipe;
+  int selectedIndex = 0;
 
   @override
   void initState() {
-    _recipes.then((value) {
+    print('user == null ${widget.user == null}');
+    widget.theRecipes = ApiManager.getRecipes(
+        clientId: widget.user != null ? widget.user!.uid : null);
+    widget.theRecipes!.then((value) {
       setState(() {
+        selectedIndex = 0;
         if (value.isEmpty) {
           selectedRecipe = null;
         } else {
@@ -66,22 +71,22 @@ class _HomeScreenState extends State<HomeScreen> {
     Alert(
         closeIcon: const Icon(FontAwesomeIcons.windowClose),
         context: context,
-        title: login ? "LOGIN" : "REGISTER",
+        title: login ? LocaleKeys.login.tr() : LocaleKeys.register.tr(),
         content: Column(
           children: [
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 icon: Icon(Icons.account_circle),
-                labelText: 'Email',
+                labelText: LocaleKeys.email.tr(),
               ),
             ),
             TextField(
               controller: passController,
               obscureText: true,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 icon: Icon(Icons.lock),
-                labelText: 'Password',
+                labelText: LocaleKeys.password.tr(),
               ),
             ),
             Container(
@@ -94,8 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: Text(
                   login
-                      ? 'Not registered yet? Register?'
-                      : 'Already registered? Log in?',
+                      ? LocaleKeys.not_registered.tr()
+                      : LocaleKeys.already_registered.tr(),
                   style: const TextStyle(fontSize: 12),
                 ),
               ),
@@ -125,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
             child: Text(
-              login ? "LOGIN" : "REGISTER",
+              login ? LocaleKeys.login.tr() : LocaleKeys.register.tr(),
               style: const TextStyle(color: Colors.white, fontSize: 20),
             ),
           )
@@ -137,12 +142,15 @@ class _HomeScreenState extends State<HomeScreen> {
       if (value != null) {
         switch (value) {
           case MenuItems.all:
-            _recipes = ApiManager.getRecipes();
+            widget.theRecipes = ApiManager.getRecipes(
+                clientId: AuthService().currentUser != null
+                    ? AuthService().currentUser!.uid
+                    : null);
             _menuItem = value;
             break;
           case MenuItems.my:
-            if (widget.isLogged) {
-              _recipes = ApiManager.getRecipesOfClientId(
+            if (AuthService().currentUser != null) {
+              widget.theRecipes = ApiManager.getRecipesOfClientId(
                   AuthService().currentUser!.uid);
               _menuItem = value;
             } else {
@@ -150,11 +158,15 @@ class _HomeScreenState extends State<HomeScreen> {
             }
             break;
         }
-        _recipes.then((value) {
+        widget.theRecipes!.then((value) {
           setState(() {
+            selectedIndex = 0;
+            print('recipes value: ${value.join(", ")}');
             if (value.isEmpty) {
+              print("value is empty");
               selectedRecipe = null;
             } else {
+              print('value is full');
               selectedRecipe = value[0];
             }
           });
@@ -222,9 +234,9 @@ class _HomeScreenState extends State<HomeScreen> {
   //   )
   // ];
 
-  void onGooglePayResult(paymentResult) {
-    debugPrint(paymentResult.toString());
-  }
+  // void onGooglePayResult(paymentResult) {
+  //   debugPrint(paymentResult.toString());
+  // }
 
   Widget buildRecipeInfo() => Container(
         decoration: Constants.boxDecoration,
@@ -273,17 +285,19 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Widget buildTable() => FutureBuilder<List<Recipe>>(
-        future: _recipes,
+        future: widget.theRecipes,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             final recipes = snapshot.data as List<Recipe>;
             return RecipesTable(
               recipes: recipes,
-              rowSelected: (Recipe recipe) {
+              rowSelected: (Recipe recipe, int index) {
                 setState(() {
                   selectedRecipe = recipe;
+                  selectedIndex = index;
                 });
               },
+              selectedIndex: selectedIndex,
             );
           } else {
             return const CircularProgressIndicator();
@@ -334,14 +348,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             GestureDetector(
               onTap: () {
-                if (widget.isLogged) {
+                if (AuthService().currentUser != null) {
                 } else {
                   buildLoginAlert(context);
                 }
               },
               child: Row(
                 children: [
-                  widget.isLogged
+                  AuthService().currentUser != null
                       ? TextButton(
                           onPressed: () async {
                             try {
@@ -353,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               await toast(message: 'Error', color: Colors.red);
                             }
                           },
-                          child: const Text('Log out'),
+                          child: Text(LocaleKeys.log_out.tr()),
                         )
                       : const SizedBox(),
                   const SizedBox(
@@ -366,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(
                     width: 5,
                   ),
-                  widget.isLogged
+                  AuthService().currentUser != null
                       ? Text(
                           AuthService().currentUser!.email!,
                           style: const TextStyle(
@@ -411,41 +425,62 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Widget buildSaveButton() {
-    bool enable = true;
-    if (selectedRecipe == null || _menuItem != MenuItems.all) {
-      enable = false;
-    }
     return FutureBuilder(
-        future: _recipes,
+        future: widget.theRecipes,
         builder: (context, snapshot) {
-          print('enable: $enable');
           return ElevatedButton(
             onPressed: () async {
-              if (enable) {
-                if (widget.isLogged) {
-                  if (selectedRecipe!.price == 0) {
+              if (selectedRecipe != null) {
+                if (AuthService().currentUser != null) {
+                  if (_menuItem == MenuItems.my) {
+                    final response = await ApiManager.deleteClientRecipe(
+                        widget.user!.uid, selectedRecipe!.recipeId);
+                    print('delete response: ${response.statusCode}');
+                    widget.theRecipes =
+                        ApiManager.getRecipesOfClientId(widget.user!.uid);
+                  } else {
+                    //if (selectedRecipe!.price == 0) {
                     final response = await ApiManager.postClientRecipe({
                       'clientId': AuthService().currentUser!.uid,
                       'recipeId': selectedRecipe!.recipeId
                     });
-                    print('respnse: ${response.statusCode}');
-                  } else {
+                    print('response: ${response.statusCode}');
+                    //} else {
                     //TODO: add payments
+                    //}
+                    widget.theRecipes = ApiManager.getRecipes(
+                        clientId:
+                            widget.user != null ? widget.user!.uid : null);
                   }
+                  widget.theRecipes!.then((value) {
+                    setState(() {
+                      selectedIndex = 0;
+                      if (value.isEmpty) {
+                        selectedRecipe = null;
+                      } else {
+                        selectedRecipe = value[0];
+                      }
+                    });
+                  });
                 } else {
                   buildLoginAlert(context);
                 }
               }
             },
-            child: Text(selectedRecipe != null && selectedRecipe!.price == 0
-                ? LocaleKeys.save_button.tr()
-                : LocaleKeys.buy_button.tr()),
+            child: selectedRecipe == null
+                ? const SizedBox()
+                : Text(_menuItem == MenuItems.my
+                    ? LocaleKeys.remove.tr()
+                    : selectedRecipe!.price == 0
+                        ? LocaleKeys.save_button.tr()
+                        : LocaleKeys.buy_button.tr()),
           );
         });
   }
 
   @override
   Widget build(BuildContext context) {
+    print('2user == null ${widget.user == null}');
     return Scaffold(
       body: Container(
         color: const Color.fromRGBO(255, 252, 212, 100),

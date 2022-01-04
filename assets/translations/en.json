@@ -4,5 +4,13 @@
   "save_button": "Save",
   "buy_button": "Buy",
   "recipe_name": "name",
-  "price": "price"
+  "price": "price",
+  "login": "LOGIN",
+  "email": "Email",
+  "password": "Password",
+  "register": "REGISTER",
+  "not_registered": "Not registered yet? Register?",
+  "already_registered": "Already registered? Log in?",
+  "remove": "Remove",
+  "log_out": "Log out"
 }

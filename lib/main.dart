@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         title: 'Home brewery',
-        home: Splash(),
+        home: const Splash(),
       ),
     );
   }
