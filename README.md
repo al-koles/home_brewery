@@ -20,6 +20,6 @@ Features:
 
 ![LogIn/Register menu](screenshots/image_2022-01-15_12-17-19.png)
 
-3. Authorized $ localized
+3. Authorized & localized
 
 ![Authorized $ localized](screenshots/image_2022-01-15_12-19-16.png)
