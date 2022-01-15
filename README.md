@@ -2,7 +2,7 @@
 
 It is a flutter website for the home brewing system.
 It allows you to search for recipes in library, read them, buy or save some recipes.
-Backend is an ASP.NET Web Api which works with SQL Server.
+Backend is an ASP.NET Core Web Api which works with SQL Server.
 Web Api repo: https://github.com/al-koles/HomeBreweryWebApi.git
 
 Features:
