@@ -1,16 +1,25 @@
 # home_brewery
 
-A new Flutter project.
+It is a flutter website for the home brewing system.
+It allows you to search for recipes in library, read them, buy or save some recipes.
+Backend is an ASP.NET Web Api which works with SQL Server.
+Web Api repo: https://github.com/al-koles/HomeBreweryWebApi.git
 
-## Getting Started
+Features:
+* authorization with Firebase Auth;
+* localization (eng, ukr);
+* SQL Server database;
 
-This project is a starting point for a Flutter application.
+## Screenshots
 
-A few resources to get you started if this is your first Flutter project:
+1. Interface
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+![Interface](screenshots/image_2022-01-15_12-16-50.png)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+2. LogIn/Register menu
+
+![LogIn/Register menu](screenshots/image_2022-01-15_12-17-19.png)
+
+3. Authorized $ localized
+
+![Authorized $ localized](screenshots/image_2022-01-15_12-19-16.png)
